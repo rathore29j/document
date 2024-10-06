@@ -100,4 +100,477 @@ Here are some commonly asked Docker interview questions, along with explanations
     - Minimize the number of layers in your Dockerfile.
     - Run containers as non-root users.
 
+
 These questions cover a range of topics from beginner to advanced levels and test both theoretical and practical knowledge of Docker.
+=========
+SOLID
+The **SOLID principles** are a set of design principles in object-oriented programming that aim to make software more maintainable, scalable, and flexible. Let's break down each SOLID principle and provide examples in **Java**:
+
+### 1. **Single Responsibility Principle (SRP)**
+
+**Definition**: A class should have only one reason to change, meaning it should only have one job or responsibility.
+
+**Example**:
+Suppose you have a class that handles both user data and sends email notifications. This violates SRP because the class has two responsibilities. The better approach is to separate these concerns.
+
+```java
+// Violating SRP: A class with multiple responsibilities
+public class UserService {
+    public void addUser(String name) {
+        // Logic to add user
+        System.out.println("User added: " + name);
+        
+        // Sending email notification (responsibility 2)
+        sendEmail(name);
+    }
+
+    private void sendEmail(String name) {
+        System.out.println("Sending email to " + name);
+    }
+}
+```
+
+**Solution**: Separate user management and email notification into different classes.
+
+```java
+// Following SRP: Each class has a single responsibility
+
+public class UserService {
+    private EmailService emailService;
+    
+    public UserService(EmailService emailService) {
+        this.emailService = emailService;
+    }
+
+    public void addUser(String name) {
+        // Logic to add user
+        System.out.println("User added: " + name);
+        emailService.sendEmail(name);  // Delegating email responsibility
+    }
+}
+
+public class EmailService {
+    public void sendEmail(String name) {
+        System.out.println("Sending email to " + name);
+    }
+}
+```
+
+### 2. **Open/Closed Principle (OCP)**
+
+**Definition**: Software entities (classes, modules, functions) should be open for extension but closed for modification.
+
+**Example**:
+You have a shape class, and you want to calculate the area of various shapes. You should avoid modifying existing classes and instead extend them when adding new behavior.
+
+```java
+// Violating OCP: Modifying the class when new shapes are added
+public class AreaCalculator {
+    public double calculateArea(Object shape) {
+        if (shape instanceof Circle) {
+            Circle circle = (Circle) shape;
+            return Math.PI * circle.getRadius() * circle.getRadius();
+        } else if (shape instanceof Rectangle) {
+            Rectangle rectangle = (Rectangle) shape;
+            return rectangle.getWidth() * rectangle.getHeight();
+        }
+        return 0;
+    }
+}
+```
+
+**Solution**: Use polymorphism to extend behavior without modifying the existing class.
+
+```java
+// Following OCP: Extend behavior by adding new classes
+interface Shape {
+    double calculateArea();
+}
+
+class Circle implements Shape {
+    private double radius;
+
+    public Circle(double radius) {
+        this.radius = radius;
+    }
+
+    @Override
+    public double calculateArea() {
+        return Math.PI * radius * radius;
+    }
+}
+
+class Rectangle implements Shape {
+    private double width;
+    private double height;
+
+    public Rectangle(double width, double height) {
+        this.width = width;
+        this.height = height;
+    }
+
+    @Override
+    public double calculateArea() {
+        return width * height;
+    }
+}
+
+public class AreaCalculator {
+    public double calculateArea(Shape shape) {
+        return shape.calculateArea();
+    }
+}
+```
+
+### 3. **Liskov Substitution Principle (LSP)**
+
+**Definition**: Objects of a superclass should be replaceable with objects of a subclass without affecting the correctness of the program.
+
+**Example**:
+If you have a base class for `Bird` and a derived class `Penguin`, the `Penguin` class should not break the functionality of the `Bird` class, especially if there are behaviors (like flying) that don't apply to all birds.
+
+```java
+// Violating LSP: Not all birds can fly, but we force them to
+class Bird {
+    public void fly() {
+        System.out.println("Flying");
+    }
+}
+
+class Penguin extends Bird {
+    @Override
+    public void fly() {
+        throw new UnsupportedOperationException("Penguins can't fly");
+    }
+}
+```
+
+**Solution**: Use proper abstraction so that flight is only associated with birds that can fly.
+
+```java
+// Following LSP: Separating birds that can fly from those that cannot
+interface Flyable {
+    void fly();
+}
+
+class Bird {
+    // Common bird properties
+}
+
+class Sparrow extends Bird implements Flyable {
+    @Override
+    public void fly() {
+        System.out.println("Sparrow flying");
+    }
+}
+
+class Penguin extends Bird {
+    // Penguins don't fly
+}
+```
+
+### 4. **Interface Segregation Principle (ISP)**
+
+**Definition**: Clients should not be forced to depend on interfaces they do not use.
+
+**Example**:
+Suppose you have a `Worker` interface that forces all implementations to have unnecessary methods.
+
+```java
+// Violating ISP: Interface forces classes to implement unnecessary methods
+public interface Worker {
+    void work();
+    void eat();
+}
+
+class Robot implements Worker {
+    @Override
+    public void work() {
+        System.out.println("Robot working");
+    }
+
+    @Override
+    public void eat() {
+        // Robots don't eat, but we must implement this method
+    }
+}
+```
+
+**Solution**: Split the interface into smaller, more specific ones.
+
+```java
+// Following ISP: Use more granular interfaces
+public interface Workable {
+    void work();
+}
+
+public interface Eatable {
+    void eat();
+}
+
+class Human implements Workable, Eatable {
+    @Override
+    public void work() {
+        System.out.println("Human working");
+    }
+
+    @Override
+    public void eat() {
+        System.out.println("Human eating");
+    }
+}
+
+class Robot implements Workable {
+    @Override
+    public void work() {
+        System.out.println("Robot working");
+    }
+}
+```
+
+### 5. **Dependency Inversion Principle (DIP)**
+
+**Definition**: High-level modules should not depend on low-level modules. Both should depend on abstractions. Abstractions should not depend on details; details should depend on abstractions.
+
+**Example**:
+A class that depends directly on a concrete class violates DIP because it becomes tightly coupled with that class.
+
+```java
+// Violating DIP: High-level class depends on low-level class directly
+class LightBulb {
+    public void turnOn() {
+        System.out.println("LightBulb turned on");
+    }
+
+    public void turnOff() {
+        System.out.println("LightBulb turned off");
+    }
+}
+
+class Switch {
+    private LightBulb lightBulb;
+
+    public Switch(LightBulb lightBulb) {
+        this.lightBulb = lightBulb;
+    }
+
+    public void operate() {
+        lightBulb.turnOn();
+        // More operations
+        lightBulb.turnOff();
+    }
+}
+```
+
+**Solution**: Depend on abstractions (interfaces) instead of concrete classes.
+
+```java
+// Following DIP: High-level class depends on an interface (abstraction)
+interface Switchable {
+    void turnOn();
+    void turnOff();
+}
+
+class LightBulb implements Switchable {
+    @Override
+    public void turnOn() {
+        System.out.println("LightBulb turned on");
+    }
+
+    @Override
+    public void turnOff() {
+        System.out.println("LightBulb turned off");
+    }
+}
+
+class Switch {
+    private Switchable device;
+
+    public Switch(Switchable device) {
+        this.device = device;
+    }
+
+    public void operate() {
+        device.turnOn();
+        // More operations
+        device.turnOff();
+    }
+}
+```
+
+### Summary
+
+- **SRP**: A class should only have one responsibility.
+- **OCP**: A class should be open for extension but closed for modification.
+- **LSP**: Subclasses should be replaceable with their base classes.
+- **ISP**: Split large interfaces into smaller, more specific ones.
+- **DIP**: Depend on abstractions, not concrete implementations.
+
+These principles ensure your code is maintainable, scalable, and easier to manage.
+
+====
+API GATEWAY:
+Clients make requests to Spring Cloud Gateway. If the Gateway Handler Mapping determines that a request matches a route, it is sent to the Gateway Web Handler. This handler runs the request through a filter chain that is specific to the request. The reason the filters are divided by the dotted line is that filters can run logic both before and after the proxy request is sent. All “pre” filter logic is executed. Then the proxy request is made. After the proxy request is made, the “post” filter logic is run.
+
+An API Gateway is a key component in a microservices architecture that acts as a single entry point for all client requests. Instead of clients directly interacting with microservices, the API Gateway handles all requests, routes them to the appropriate microservices, and aggregates or transforms the responses if needed.
+Key Functions of an API Gateway:
+Routing: It directs the incoming requests to the appropriate microservices based on the request's path, headers, or other metadata.
+Load Balancing: It distributes incoming traffic across multiple instances of a service.
+Security: It handles authentication, authorization, and traffic filtering. For example, API Gateways can handle OAuth tokens, JWTs, and SSL termination.
+Rate Limiting: It enforces rate limits to prevent abuse and manage API quotas.
+Caching: It can cache responses from microservices to improve performance and reduce load on the backend services.
+Response Aggregation: It can combine responses from multiple services into a single response.
+Monitoring: It collects metrics and logs for monitoring API calls and traffic.
+
+Why Use an API Gateway?
+Simplifies Client Communication: Clients only need to know one URL (the API Gateway) rather than tracking multiple microservice endpoints.
+Centralized Security: It allows you to manage security, like OAuth or JWT token validation, in one place instead of in every microservice.
+Flexibility and Scalability: The API Gateway can handle tasks such as load balancing and rate limiting, allowing microservices to focus solely on their business logic.
+
+3.	Circuit Breaker
+The Circuit Breaker pattern is a fault-tolerance mechanism designed to prevent cascading failures and allow applications to gracefully handle service outages or unavailability. It works by monitoring the interactions between microservices and temporarily halting requests to a failing service to prevent overloading it and to allow it time to recover.
+In a Spring Boot microservices architecture, the Circuit Breaker pattern can be implemented using libraries such as Resilience4j or Hystrix (though Hystrix is now in maintenance mode and Resilience4j is recommended for new projects).
+How Circuit Breaker Works:
+1.	Closed State: In normal operation, the circuit breaker is in the closed state, allowing requests to flow to the target service.
+2.	Open State: If a service experiences repeated failures (such as timeouts or errors), the circuit breaker switches to the open state. In this state, requests are immediately blocked, and a fallback response is returned (or another action is taken).
+3.	Half-Open State: After a configured time, the circuit breaker allows a few test requests to check if the service has recovered. If these succeed, the circuit breaker moves back to the closed state; if they fail, it returns to the open state.
+Benefits of Using Circuit Breaker:
+•	Prevents cascading failures: Stops failure from propagating across microservices by stopping calls to services that are down or unresponsive.
+•	Increases system resilience: Helps in gracefully handling failures and making the system more resilient to partial outages.
+•	Fallback Mechanism: Ensures users get some kind of response, even if it’s degraded, instead of waiting for a service timeout.
+How to move From OPen to half open state in Circuit Breaker  pattern
+In the Circuit Breaker pattern, the transition from the Open state to the Half-Open state is a key step in recovering from failure. When a service is failing (e.g., due to timeouts or errors), the circuit breaker opens and stops making requests to that service. After a certain wait time, the circuit breaker moves to the Half-Open state to test if the service has recovered. If the test requests succeed, the circuit breaker fully closes (returns to normal); if the tests fail, it reopens.
+How the Transition Happens:
+1.	Open State:
+o	The circuit breaker enters the Open state after the failure threshold is met (e.g., 50% of requests have failed).
+o	During this state, all requests to the target service are automatically blocked to prevent further load on the failing service.
+2.	Wait Duration (Cool-down):
+o	The circuit breaker remains in the Open state for a configured amount of time (called waitDurationInOpenState), during which no requests are forwarded to the target service.
+3.	Transition to Half-Open:
+o	After the wait duration has passed, the circuit breaker automatically transitions to the Half-Open state.
+o	In the Half-Open state, the circuit breaker allows a limited number of test requests to pass through to the service. This is to check whether the service has recovered.
+4.	Half-Open State:
+o	In this state, if the test requests succeed (i.e., they return a successful response), the circuit breaker transitions back to the Closed state (normal operation).
+o	If the test requests fail, the circuit breaker transitions back to the Open state for another cool-down period.
+Transition from Open to Half-Open in Resilience4j:
+When using Resilience4j in a Spring Boot application, the transition between the states is automatic and based on configuration parameters. You can configure how long the circuit breaker should remain in the open state and how many test requests are allowed in the half-open state.
+resilience4j:
+  circuitbreaker:
+    instances:
+      myService:
+        slidingWindowSize: 10  # Number of requests used to measure failure rate
+        failureRateThreshold: 50  # 50% failure rate triggers the circuit breaker
+        waitDurationInOpenState: 20s  # Time to stay in open state before moving to half-open
+        permittedNumberOfCallsInHalfOpenState: 3  # Number of test calls allowed in half-open state
+        minimumNumberOfCalls: 5  # Minimum number of calls before considering failure rate
+        automaticTransitionFromOpenToHalfOpenEnabled: true  # Enable automatic transition from open to half-open
+Example:
+New Lines
+		<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-aop</artifactId>
+		</dependency>
+
+	<dependency>
+	<groupId>io.github.resilience4j</groupId>
+	<artifactId>resilience4j-spring-boot2</artifactId>
+	</dependency>
+/CircuitBreakerController.java New
+package com.in28minutes.microservices.currencyexchangeservice;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
+import io.github.resilience4j.bulkhead.annotation.Bulkhead;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+
+@RestController
+public class CircuitBreakerController {
+	
+	private Logger logger = 
+				LoggerFactory.getLogger(CircuitBreakerController.class);
+	
+	@GetMapping("/sample-api")
+	//@Retry(name = "sample-api", fallbackMethod = "hardcodedResponse")
+	//@CircuitBreaker(name = "default", fallbackMethod = "hardcodedResponse")
+	//@RateLimiter(name="default")
+	@Bulkhead(name="sample-api")
+	public String sampleApi() {
+		logger.info("Sample api call received");
+//		ResponseEntity<String> forEntity = new RestTemplate().getForEntity("http://localhost:8080/some-dummy-url", 
+//					String.class);
+//		return forEntity.getBody();
+		return "sample-api";
+	}
+	
+	public String hardcodedResponse(Exception ex) {
+		return "fallback-response";
+	}
+}
+/currency-exchange-service/src/main/resources/application.properties Modified
+New Lines
+resilience4j.retry.instances.sample-api.maxAttempts=5 #NEW
+#resilience4j.retry.instances.sample-api.maxRetryAttempts=5 #OLD
+
+resilience4j.retry.instances.sample-api.waitDuration=1s
+resilience4j.retry.instances.sample-api.enableExponentialBackoff=true
+#resilience4j.circuitbreaker.instances.default.failureRateThreshold=90
+resilience4j.ratelimiter.instances.default.limitForPeriod=2
+resilience4j.ratelimiter.instances.default.limitRefreshPeriod=10s
+resilience4j.bulkhead.instances.default.maxConcurrentCalls=10
+resilience4j.bulkhead.instances.sample-api.maxConcurrentCalls=10
+
+
+What is Rate Limiter : If we want to permit only certain call to specific time then we use Rate Limiter.
+Example: Suppose in 10 sec only call 10000 
+A Rate Limiter in Spring Boot is a mechanism used to limit the rate at which requests are processed, ensuring that systems are not overwhelmed by an excessive number of requests within a given time window. It is particularly useful in microservice architectures to safeguard services from being overloaded by too many requests from clients or other services.
+In Spring Boot, rate limiting can be implemented using Resilience4j, which provides a lightweight, easy-to-use library for adding fault tolerance patterns like Circuit Breakers, Rate Limiters, Retries, and Bulkheads.
+Why Use Rate Limiting?
+•	Prevent Overloading: Avoid overloading a service by limiting the number of requests it can handle in a certain time frame.
+•	Protect Shared Resources: Ensure fair use of shared resources by throttling requests.
+•	Service Stability: Help maintain service availability by controlling how fast requests are processed.
+
+Example: Rate Limiting Behavior
+Suppose the rate limiter is configured to allow 5 requests per second (limitForPeriod: 5 and limitRefreshPeriod: 1s). Here's what will happen:
+1.	First 5 Requests: The first 5 requests within a second are allowed.
+2.	Subsequent Requests: Any requests beyond 5 within the same second are blocked, and the fallback method is invoked.
+3.	After 1 Second: After the 1-second window expires, the rate limiter refreshes, and the next set of 5 requests are allowed.
+Advanced Features of Resilience4j Rate Limiter
+•	Timeouts: You can configure a timeoutDuration to specify how long the system should wait for permission if the rate limit has been exceeded. If no permission is granted within this time, the request is rejected.
+•	Bulkhead: You can combine rate limiting with the bulkhead pattern to further isolate services by limiting the number of concurrent calls.
+•	Retry: If rate limiting causes a request to fail, you can combine it with a retry mechanism to retry the failed request after a delay.
+Combining Rate Limiting with Other Patterns
+You can combine rate limiting with other resilience patterns, such as:
+•	Circuit Breaker: Protect services from high traffic surges and fallback to a different path if traffic exceeds a threshold.
+•	Retry: Automatically retry requests if they fail due to rate limits.
+
+
+resilience4j.ratelimiter.instances.default.limitForPeriod=2
+resilience4j.ratelimiter.instances.default.limitRefreshPeriod=10s
+
+
+What us BulkHead:
+ How many Concurrent call allow then use BulkHead
+The Bulkhead pattern in Spring Boot is a resilience pattern that is used to isolate different parts of a system to prevent failures in one part from cascading to others. It limits the amount of resources (such as threads or connections) assigned to a specific service or subsystem, ensuring that even if one part of the system becomes overloaded or fails, other parts can still function normally.
+The Bulkhead pattern can be particularly helpful in microservice architectures, where different services may have varying resource requirements and failure tolerance. By limiting the number of concurrent calls or threads for a specific service, you protect the overall system from being overwhelmed by a failure or spike in one service.
+Why Use the Bulkhead Pattern?
+1.	Failure Containment: Prevent a failure in one service or subsystem from affecting the entire system.
+2.	Resource Isolation: Ensure that each part of your system has dedicated resources (threads, connections) and avoid shared resource exhaustion.
+3.	Service Stability: Maintain the stability and responsiveness of critical services, even under load.
+
+•  The @Bulkhead annotation limits the number of concurrent calls to the getData() method to 5 (as defined in application.yml).
+•  If more than 5 concurrent calls are made, the fallback method bulkheadFallback() is triggered, providing a graceful response to the client.
+
+Use Cases for Bulkhead Pattern
+1.	Microservice Isolation: In a microservice architecture, different services may have varying levels of tolerance for high load. Bulkheads prevent one service from consuming too many resources and affecting others.
+2.	Database Connection Pooling: You can isolate database connection pools for different parts of your application, ensuring that high traffic in one area doesn’t exhaust all available connections.
+3.	External API Calls: For services making API calls to external systems, bulkheads can prevent overloading external services or being affected by their slowness.
+4.	Graceful Degradation: By implementing fallback methods in bulkhead patterns, your application can gracefully degrade functionality when parts of the system are overloaded
+
+resilience4j.bulkhead.instances.default.maxConcurrentCalls=10
+resilience4j.bulkhead.instances.sample-api.maxConcurrentCalls=10
